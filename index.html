@@ -390,7 +390,7 @@
     <div class="card active" style="--card-color:#00e5ff" onclick="show(0, this)">
       <div class="card-num">01 ·</div>
       <div class="card-title">Скрепинг тем</div>
-      <div class="card-sub">Puppeteer MCP · Google Trends</div>
+      <div class="card-sub">google-trends-api · SerpAPI</div>
       <div class="card-icon">🔍</div>
     </div>
 
@@ -404,14 +404,14 @@
     <div class="card" style="--card-color:#ec4899" onclick="show(2, this)">
       <div class="card-num">03 ·</div>
       <div class="card-title">Генерация картинок</div>
-      <div class="card-sub">Nano Banana · Replicate SDXL</div>
+      <div class="card-sub">Sharp · Canvas · Canva API</div>
       <div class="card-icon">🎨</div>
     </div>
 
     <div class="card" style="--card-color:#f59e0b" onclick="show(3, this)">
       <div class="card-num">04 ·</div>
       <div class="card-title">Автопостинг</div>
-      <div class="card-sub">Buffer API · cron</div>
+      <div class="card-sub">LinkedIn Share API v2 · cron</div>
       <div class="card-icon">📡</div>
     </div>
 
@@ -440,11 +440,11 @@
       <div class="tree-indent">
         <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-dir">src/</span></div>
         <div class="tree-indent">
-          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">scraper.js</span> <span class="t-comment">// Puppeteer MCP + Trends</span></div>
-          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">generator.js</span> <span class="t-comment">// Claude API calls</span></div>
-          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">image.js</span> <span class="t-comment">// Replicate SDXL</span></div>
-          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">poster.js</span> <span class="t-comment">// Buffer API</span></div>
-          <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">analytics.js</span> <span class="t-comment">// metrics + loop</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">scraper.js</span> <span class="t-comment">// google-trends-api + SerpAPI</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">generator.js</span> <span class="t-comment">// Claude API (sonnet-4-5)</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">image.js</span> <span class="t-comment">// Sharp + node-canvas cards</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">poster.js</span> <span class="t-comment">// LinkedIn Share API v2</span></div>
+          <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">analytics.js</span> <span class="t-comment">// CSV/Puppeteer + PR loop</span></div>
         </div>
         <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-dir">prompts/</span></div>
         <div class="tree-indent">
@@ -466,24 +466,24 @@
     <h3>// Команды Claude Code</h3>
     <div class="cmd-list">
       <div class="cmd-item">
-        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Напиши scraper.js — парсинг Google Trends через Puppeteer MCP"</span>
-        <span class="cmd-comment">// создаёт модуль скрепинга</span>
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Напиши scraper.js — google-trends-api + SerpAPI fallback, SQLite очередь"</span>
+        <span class="cmd-comment">// стабильный скрейпинг без Puppeteer</span>
       </div>
       <div class="cmd-item">
         <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Сгенерируй LinkedIn пост на тему {topic} в стиле tone-of-voice.md"</span>
-        <span class="cmd-comment">// генерация поста через Claude API</span>
+        <span class="cmd-comment">// Claude sonnet-4-5-20250929, 2 варианта A/B</span>
       </div>
       <div class="cmd-item">
-        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Создай промпт для Replicate SDXL по теме: {post_title}"</span>
-        <span class="cmd-comment">// генерация обложки</span>
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Сделай текстовую карточку 1200×627 через node-canvas для: {headline}"</span>
+        <span class="cmd-comment">// без SDXL — чистый текст лучше для engagement</span>
       </div>
       <div class="cmd-item">
-        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Настрой cron-расписание: пост в 9:00 по МСК в будни"</span>
-        <span class="cmd-comment">// автоматизация постинга</span>
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Напиши poster.js — LinkedIn ugcPosts API v2 с OAuth и retry"</span>
+        <span class="cmd-comment">// прямой постинг без Buffer</span>
       </div>
       <div class="cmd-item">
-        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Проанализируй метрики за неделю и улучши tone-of-voice.md"</span>
-        <span class="cmd-comment">// фидбэк-луп</span>
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Создай PR с предложениями по tone-of-voice на основе metrics.csv"</span>
+        <span class="cmd-comment">// human-in-the-loop, не автокоммит</span>
       </div>
     </div>
   </div>
@@ -497,32 +497,32 @@ const modules = [
     bg: '#00e5ff18',
     icon: '🔍',
     title: 'Скрепинг тем',
-    desc: 'Автоматический сбор трендовых тем из Google Trends и веб-источников через Puppeteer MCP. Формирует очередь тем для генерации контента.',
-    tags: ['MCP', 'Node.js', 'Cron'],
+    desc: 'Стабильный сбор трендовых тем через официальный google-trends-api и SerpAPI. Puppeteer не используется — Google активно блокирует браузерный скрейпинг. Очередь тем хранится в SQLite.',
+    tags: ['google-trends-api', 'SerpAPI', 'SQLite'],
     tools: [
-      { name: 'Puppeteer MCP', type: 'Browser automation', color: '#00e5ff' },
-      { name: 'Google Trends', type: 'Topic discovery', color: '#00e5ff' },
-      { name: 'RSS Parser', type: 'Feed scraping', color: '#4ade80' },
-      { name: 'Cheerio', type: 'HTML parsing', color: '#f59e0b' },
-      { name: 'Node-cron', type: 'Scheduler', color: '#7c3aed' },
-      { name: 'Redis Queue', type: 'Topic buffer', color: '#ef4444' },
+      { name: 'google-trends-api', type: 'npm · official wrapper', color: '#00e5ff' },
+      { name: 'SerpAPI', type: 'Stable Google scraping', color: '#4ade80' },
+      { name: 'RSS Parser', type: 'Feed scraping', color: '#f59e0b' },
+      { name: 'better-sqlite3', type: 'Topic queue (no Redis)', color: '#7c3aed' },
+      { name: 'Node-cron', type: 'Scheduler', color: '#ec4899' },
+      { name: 'Zod', type: 'Topic schema validation', color: '#ef4444' },
     ],
-    flow: ['Google Trends', 'Puppeteer', 'HTML Parser', 'Topic Filter', 'Queue'],
+    flow: ['Google Trends API', 'SerpAPI', 'Topic Scorer', 'SQLite Queue', 'Next Step'],
     steps: [
       {
-        title: 'Запуск Puppeteer MCP',
-        desc: 'Браузерный агент открывает Google Trends и LinkedIn, собирает топ-10 трендов в нужной нише.',
-        code: 'mcp__puppeteer__navigate({ url: "https://trends.google.com/trending" })\nmcp__puppeteer__evaluate({ script: "getTrendingTopics()" })'
+        title: 'Запрос через google-trends-api',
+        desc: 'Официальный npm-пакет запрашивает trending-запросы по нише. Стабильнее Puppeteer — не требует headless-браузера и не ломается при изменении разметки Google.',
+        code: 'const googleTrends = require("google-trends-api")\nconst result = await googleTrends.dailyTrends({ geo: "US", category: "h" })\nconst topics = JSON.parse(result).default.trendingSearchesDays[0].trendingSearches'
       },
       {
         title: 'Фильтрация и скоринг тем',
-        desc: 'Темы оцениваются по релевантности, объёму поиска и конкурентности. Проходят только темы с score > 0.7.',
+        desc: 'Темы оцениваются по релевантности нише и объёму поиска. SerpAPI используется как fallback для дополнительного контекста.',
         code: 'const scored = topics.map(t => ({ ...t, score: scoreRelevance(t) }))\nconst filtered = scored.filter(t => t.score > 0.7)'
       },
       {
-        title: 'Сохранение в очередь',
-        desc: 'Отфильтрованные темы кладутся в Redis-очередь для последующей генерации контента.',
-        code: 'await queue.add("content-gen", { topic, score, timestamp })'
+        title: 'Сохранение в SQLite',
+        desc: 'Для одного автора Redis — оверинжиниринг. SQLite через better-sqlite3 достаточно: быстро, без зависимостей, файл рядом с кодом.',
+        code: 'const db = new Database("queue.db")\ndb.prepare("INSERT INTO topics (topic, score, status) VALUES (?, ?, ?)"\n).run(topic, score, "pending")'
       },
     ]
   },
@@ -534,7 +534,7 @@ const modules = [
     desc: 'Claude API генерирует LinkedIn-посты с учётом Tone of Voice персонального бренда. Поддерживает A/B варианты и адаптацию под алгоритм LinkedIn.',
     tags: ['Claude API', 'Prompt Engineering', 'A/B'],
     tools: [
-      { name: 'Claude API', type: 'claude-sonnet-4-6', color: '#7c3aed' },
+      { name: 'Claude API', type: 'claude-sonnet-4-5-20250929', color: '#7c3aed' },
       { name: 'Tone of Voice', type: 'Brand guidelines', color: '#ec4899' },
       { name: 'Prompt Templates', type: 'Structured prompts', color: '#f59e0b' },
       { name: 'A/B Generator', type: 'Variant testing', color: '#00e5ff' },
@@ -551,7 +551,7 @@ const modules = [
       {
         title: 'Генерация через Claude API',
         desc: 'Claude получает тему + ToV + шаблон и генерирует 2 варианта поста: лаконичный (до 300 слов) и развёрнутый (600+).',
-        code: 'const response = await anthropic.messages.create({\n  model: "claude-sonnet-4-6",\n  messages: [{ role: "user", content: buildPrompt(topic, tov) }]\n})'
+        code: 'const response = await anthropic.messages.create({\n  model: "claude-sonnet-4-5-20250929",\n  messages: [{ role: "user", content: buildPrompt(topic, tov) }]\n})'
       },
       {
         title: 'Валидация и A/B сплит',
@@ -565,32 +565,32 @@ const modules = [
     bg: '#ec489918',
     icon: '🎨',
     title: 'Генерация картинок',
-    desc: 'Автоматическая генерация визуальных обложек для постов через Replicate SDXL. Промпты строятся на основе темы и стиля бренда.',
-    tags: ['Replicate', 'SDXL', 'Nano Banana'],
+    desc: 'Текстовые карточки через Sharp + node-canvas вместо AI-генерации. AI-обложки (SDXL) снижают engagement на LinkedIn — выглядят "пластично". Топ-авторы используют чистые текстовые карточки или карусели.',
+    tags: ['Sharp.js', 'node-canvas', 'Canva API'],
     tools: [
-      { name: 'Replicate API', type: 'SDXL inference', color: '#ec4899' },
-      { name: 'Nano Banana', type: 'Fast generation', color: '#f59e0b' },
-      { name: 'SDXL 1.0', type: 'Base model', color: '#7c3aed' },
-      { name: 'ControlNet', type: 'Composition', color: '#00e5ff' },
-      { name: 'Sharp.js', type: 'Post-processing', color: '#22c55e' },
-      { name: 'Canvas API', type: 'Text overlay', color: '#ef4444' },
+      { name: 'Sharp.js', type: 'Image processing', color: '#ec4899' },
+      { name: 'node-canvas', type: 'Text card rendering', color: '#f59e0b' },
+      { name: 'Canva API', type: 'Brand templates', color: '#7c3aed' },
+      { name: 'Brand Palette', type: 'Colors & fonts', color: '#00e5ff' },
+      { name: 'Claude API', type: 'Headline generation', color: '#22c55e' },
+      { name: 'fs + CDN', type: 'Storage & delivery', color: '#ef4444' },
     ],
-    flow: ['Post Title', 'SDXL Prompt', 'Replicate', 'Post-process', 'CDN Upload'],
+    flow: ['Post Title', 'Claude Headline', 'node-canvas', 'Sharp Resize', 'Save File'],
     steps: [
       {
-        title: 'Построение промпта для SDXL',
-        desc: 'Claude генерирует детальный промпт для Stable Diffusion на основе темы поста и фирменного стиля.',
-        code: 'const imgPrompt = await claude.generate(\n  `Create SDXL prompt for LinkedIn cover: "${postTitle}"\n   Style: minimalist, dark, professional, tech`\n)'
+        title: 'Генерация заголовка карточки',
+        desc: 'Claude сокращает тему поста до 6–8 слов — ёмкий заголовок для текстовой карточки. Без AI-изображений.',
+        code: 'const headline = await anthropic.messages.create({\n  model: "claude-sonnet-4-5-20250929",\n  messages: [{ role: "user", content:\n    `Compress to 6-8 word card headline: "${postTitle}"` }]\n})'
       },
       {
-        title: 'Запрос к Replicate / Nano Banana',
-        desc: 'Промпт отправляется в Replicate SDXL. Nano Banana используется для быстрой генерации превью.',
-        code: 'const output = await replicate.run("stability-ai/sdxl", {\n  input: { prompt: imgPrompt, width: 1200, height: 627 }\n})'
+        title: 'Рендер текстовой карточки',
+        desc: 'node-canvas рисует карточку 1200×627 в стиле бренда: тёмный фон, акцентный цвет, JetBrains Mono. Никакой AI-генерации изображений.',
+        code: 'const canvas = createCanvas(1200, 627)\nconst ctx = canvas.getContext("2d")\nctx.fillStyle = "#0d0d0d"\nctx.fillRect(0, 0, 1200, 627)\nctx.font = "bold 64px JetBrains Mono"\nctx.fillStyle = "#00e5ff"\nctx.fillText(headline, 80, 280)'
       },
       {
-        title: 'Постобработка и overlay',
-        desc: 'Sharp.js обрезает и сжимает изображение. Canvas добавляет текстовый оверлей с заголовком поста.',
-        code: 'await sharp(imageBuffer)\n  .resize(1200, 627)\n  .jpeg({ quality: 90 })\n  .toFile(`covers/${postId}.jpg`)'
+        title: 'Постобработка через Sharp',
+        desc: 'Sharp сжимает PNG → JPEG, добавляет лёгкий шум для "живости". Файл сохраняется локально.',
+        code: 'await sharp(canvas.toBuffer())\n  .resize(1200, 627)\n  .jpeg({ quality: 92, mozjpeg: true })\n  .toFile(`covers/${postId}.jpg`)'
       },
     ]
   },
@@ -599,32 +599,32 @@ const modules = [
     bg: '#f59e0b18',
     icon: '📡',
     title: 'Автопостинг',
-    desc: 'Расписание публикаций через Buffer API с оптимальным тайминг для LinkedIn-алгоритма. Cron-джобы управляют очередью постов.',
-    tags: ['Buffer API', 'Cron', 'LinkedIn API'],
+    desc: 'Прямая публикация через LinkedIn Share API v2 без посредников. Buffer сильно урезал API для бесплатных планов. Typefully/Taplio как альтернатива для тех, кто не хочет работать с OAuth напрямую.',
+    tags: ['LinkedIn Share API v2', 'OAuth 2.0', 'Cron'],
     tools: [
-      { name: 'Buffer API', type: 'Scheduling service', color: '#f59e0b' },
-      { name: 'Node-cron', type: 'Job scheduler', color: '#00e5ff' },
-      { name: 'LinkedIn API', type: 'Direct posting', color: '#7c3aed' },
-      { name: 'BullMQ', type: 'Job queue', color: '#ec4899' },
+      { name: 'LinkedIn Share API v2', type: 'ugcPosts endpoint', color: '#f59e0b' },
+      { name: 'OAuth 2.0', type: 'Auth flow', color: '#00e5ff' },
+      { name: 'Node-cron', type: 'Job scheduler', color: '#7c3aed' },
+      { name: 'Typefully API', type: 'Alt: no-code option', color: '#ec4899' },
       { name: 'Retry Logic', type: 'Error recovery', color: '#ef4444' },
-      { name: 'Webhook Logger', type: 'Post tracking', color: '#22c55e' },
+      { name: 'better-sqlite3', type: 'Post state tracking', color: '#22c55e' },
     ],
-    flow: ['Post Queue', 'Scheduler', 'Buffer API', 'LinkedIn', 'Confirm'],
+    flow: ['SQLite Queue', 'Cron Trigger', 'LinkedIn API v2', 'ugcPosts', 'Log Result'],
     steps: [
       {
         title: 'Cron-расписание',
-        desc: 'Посты публикуются в оптимальное время: вт–чт 8:00–9:00 по UTC+3. Cron проверяет очередь каждые 30 минут.',
-        code: 'cron.schedule("0 6 * * 2,3,4", async () => {\n  const post = await queue.getNext()\n  if (post) await publishPost(post)\n})'
+        desc: 'Посты публикуются в оптимальное время: вт–чт 8:00–9:00 по UTC+3. Cron читает следующий pending-пост из SQLite.',
+        code: 'cron.schedule("0 6 * * 2,3,4", async () => {\n  const post = db.prepare(\n    "SELECT * FROM posts WHERE status=? LIMIT 1"\n  ).get("pending")\n  if (post) await publishToLinkedIn(post)\n})'
       },
       {
-        title: 'Публикация через Buffer',
-        desc: 'Buffer API принимает текст, изображение и время публикации. Поддерживает черновики для ручного review.',
-        code: 'await buffer.createUpdate({\n  profile_ids: [LINKEDIN_PROFILE_ID],\n  text: post.content,\n  media: { photo: post.imageUrl },\n  scheduled_at: getOptimalTime()\n})'
+        title: 'Публикация через LinkedIn Share API v2',
+        desc: 'Прямой POST на ugcPosts endpoint. Требует LinkedIn OAuth app с разрешением w_member_social. Buffer не нужен.',
+        code: 'await fetch("https://api.linkedin.com/v2/ugcPosts", {\n  method: "POST",\n  headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },\n  body: JSON.stringify({\n    author: `urn:li:person:${PERSON_ID}`,\n    lifecycleState: "PUBLISHED",\n    specificContent: { "com.linkedin.ugc.ShareContent": {\n      shareCommentary: { text: post.content },\n      shareMediaCategory: "NONE"\n    }}\n  })\n})'
       },
       {
         title: 'Логирование и retry',
-        desc: 'Каждая публикация логируется. При ошибке — автоматический retry через 15 минут (до 3 попыток).',
-        code: 'await db.update(post.id, { status: "published", publishedAt: new Date() })\nwebhook.notify({ event: "post_published", postId: post.id })'
+        desc: 'Статус поста обновляется в SQLite. При ошибке 429/5xx — retry через 15 минут (до 3 попыток).',
+        code: 'db.prepare("UPDATE posts SET status=?, publishedAt=? WHERE id=?"\n).run("published", Date.now(), post.id)'
       },
     ]
   },
@@ -633,32 +633,32 @@ const modules = [
     bg: '#22c55e18',
     icon: '📊',
     title: 'Аналитика и фидбэк-луп',
-    desc: 'Сбор метрик постов (охват, реакции, комментарии) и автоматическая корректировка Tone of Voice и тематики на основе данных.',
-    tags: ['LinkedIn Analytics', 'Claude API', 'Auto-optimize'],
+    desc: 'LinkedIn Analytics API требует Marketing Developer Platform approval (недели ожидания, нужна верифицированная компания). На старте — Puppeteer-скрейпинг метрик или ручной CSV. Фидбэк-луп с human-in-the-loop: Claude предлагает правки → PR review.',
+    tags: ['Puppeteer scraping', 'CSV', 'PR review'],
     tools: [
-      { name: 'LinkedIn Analytics', type: 'Native API', color: '#22c55e' },
+      { name: 'Puppeteer', type: 'Metrics scraping fallback', color: '#22c55e' },
+      { name: 'CSV / SQLite', type: 'Manual + auto metrics', color: '#00e5ff' },
       { name: 'Claude Analysis', type: 'Pattern detection', color: '#7c3aed' },
-      { name: 'Metabase / CSV', type: 'Data storage', color: '#00e5ff' },
-      { name: 'Diff Engine', type: 'ToV updater', color: '#ec4899' },
-      { name: 'Weekly Report', type: 'Digest generator', color: '#f59e0b' },
-      { name: 'A/B Evaluator', type: 'Variant winner', color: '#ef4444' },
+      { name: 'GitHub PR', type: 'Human approve loop', color: '#ec4899' },
+      { name: 'Weekly Digest', type: 'Markdown report', color: '#f59e0b' },
+      { name: 'A/B Evaluator', type: 'Variant winner pick', color: '#ef4444' },
     ],
-    flow: ['LinkedIn API', 'Metrics DB', 'Claude Analysis', 'ToV Update', 'Next Cycle'],
+    flow: ['CSV / Puppeteer', 'SQLite Metrics', 'Claude Analysis', 'PR Draft', 'Human Approve'],
     steps: [
       {
-        title: 'Сбор метрик',
-        desc: 'LinkedIn API возвращает impressions, reactions, comments, shares и CTR для каждого поста через 48 часов.',
-        code: 'const metrics = await linkedin.getPostAnalytics(postId, {\n  fields: ["impressionCount", "likeCount", "commentCount", "shareCount"]\n})'
+        title: 'Сбор метрик (без официального API)',
+        desc: 'LinkedIn Analytics API закрыт без MDP approval. Реалистичный старт: Puppeteer логинится и собирает метрики со страницы поста, или данные вносятся вручную в CSV раз в неделю.',
+        code: '// Вариант A: Puppeteer scraping\nawait page.goto(`https://www.linkedin.com/feed/update/${urn}/`)\nconst impressions = await page.$eval(".analytics-impressions", el => el.textContent)\n\n// Вариант B: ручной CSV import\nconst rows = fs.readFileSync("metrics.csv", "utf8")'
       },
       {
         title: 'Анализ паттернов через Claude',
-        desc: 'Claude анализирует топ-5 постов недели и выявляет: какие темы, структуры и хуки работают лучше всего.',
-        code: 'const analysis = await claude.analyze({\n  posts: topPosts,\n  prompt: "Find patterns in high-performing posts. What topics, hooks, and structures work best?"\n})'
+        desc: 'Claude анализирует топ-5 постов недели: какие темы, хуки и структуры дали наибольший охват и engagement.',
+        code: 'const response = await anthropic.messages.create({\n  model: "claude-sonnet-4-5-20250929",\n  messages: [{ role: "user", content:\n    `Analyze these posts and suggest tone-of-voice improvements:\\n${JSON.stringify(topPosts)}` }]\n})'
       },
       {
-        title: 'Обновление Tone of Voice',
-        desc: 'На основе анализа Claude автоматически обновляет tone-of-voice.md — добавляет успешные паттерны и убирает неэффективные.',
-        code: 'const updatedToV = await claude.refine(currentToV, analysis.recommendations)\nfs.writeFileSync("prompts/tone-of-voice.md", updatedToV)\nawait git.commit("chore: update tone-of-voice based on weekly analytics")'
+        title: 'Фидбэк-луп с PR review',
+        desc: 'Claude НЕ обновляет tone-of-voice.md автоматически — стиль "уплывёт" за несколько итераций. Вместо этого создаётся PR с предложенными правками. Автор аппрувит или отклоняет.',
+        code: '// Claude пишет diff-предложение в файл\nfs.writeFileSync("prompts/tov-suggestions.md", analysis)\n\n// Создаётся PR для ручного review\nawait exec("git checkout -b weekly-tov-update")\nawait exec("git add prompts/tov-suggestions.md")\nawait exec(`gh pr create --title "Weekly ToV suggestions" \\\n  --body "${analysis.summary}"`)'
       },
     ]
   }
