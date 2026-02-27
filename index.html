@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkedIn Content Machine</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #141414;
+      --card:      #1a1a1a;
+      --border:    #2a2a2a;
+      --accent:    #00e5ff;
+      --accent2:   #7c3aed;
+      --green:     #22c55e;
+      --yellow:    #f59e0b;
+      --red:       #ef4444;
+      --pink:      #ec4899;
+      --text:      #e2e2e2;
+      --muted:     #666;
+      --radius:    10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 20px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+    }
+    header .logo {
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+    }
+    header .badge {
+      margin-left: auto;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── LEFT SIDEBAR ── */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--surface);
+    }
+    .sidebar-title {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 0 8px 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--card);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--card-color, var(--accent));
+      border-radius: 3px 0 0 3px;
+    }
+    .card:hover {
+      border-color: var(--card-color, var(--accent));
+      background: #1f1f1f;
+      transform: translateX(2px);
+    }
+    .card.active {
+      border-color: var(--card-color, var(--accent));
+      background: #1f1f1f;
+      box-shadow: 0 0 0 1px var(--card-color, var(--accent))22;
+    }
+    .card-num {
+      font-size: 10px;
+      color: var(--card-color, var(--accent));
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .card-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      opacity: 0.25;
+    }
+
+    /* ── DETAIL PANEL ── */
+    .detail {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .detail-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .detail-header p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.6;
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* Tools grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .tool-chip {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .tool-chip:hover { border-color: #444; }
+    .tool-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tool-name { font-size: 12px; font-weight: 500; color: #ddd; }
+    .tool-type { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* Steps */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex;
+      gap: 16px;
+      position: relative;
+    }
+    .step:not(:last-child) .step-line {
+      position: absolute;
+      left: 15px;
+      top: 34px;
+      bottom: -4px;
+      width: 1px;
+      background: var(--border);
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--step-color, var(--accent));
+      border-color: var(--step-color, var(--accent));
+      background: var(--bg);
+      z-index: 1;
+    }
+    .step-body { padding-bottom: 20px; }
+    .step-title { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .step-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+    .step-code {
+      margin-top: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .flow-node {
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: #ddd;
+      white-space: nowrap;
+    }
+    .flow-arrow {
+      color: var(--muted);
+      padding: 0 8px;
+      font-size: 14px;
+    }
+
+    /* ── BOTTOM: FILE STRUCTURE + COMMANDS ── */
+    .bottom-panel {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .bottom-section {
+      padding: 24px 28px;
+    }
+    .bottom-section:first-child {
+      border-right: 1px solid var(--border);
+    }
+    .bottom-section h3 {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* File tree */
+    .tree { font-size: 12px; line-height: 2; }
+    .tree-line { display: flex; align-items: center; gap: 8px; }
+    .tree-indent { padding-left: 20px; }
+    .tree-indent2 { padding-left: 40px; }
+    .t-dir { color: var(--accent); font-weight: 500; }
+    .t-file { color: #aaa; }
+    .t-comment { color: var(--muted); font-size: 11px; }
+    .tree-branch { color: #444; }
+
+    /* Commands */
+    .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+    .cmd-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 11px;
+    }
+    .cmd-prompt { color: var(--green); }
+    .cmd-text { color: var(--accent); }
+    .cmd-comment { color: var(--muted); display: block; margin-top: 2px; font-size: 10px; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .detail-content { animation: fadeIn 0.25s ease; }
+
+    /* Status dot */
+    .status-dot {
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid;
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">// system</div>
+  <h1>LinkedIn Content Machine</h1>
+  <div class="badge"><span class="status-dot"></span>ACTIVE</div>
+</header>
+
+<div class="workspace">
+
+  <!-- LEFT SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-title">Pipeline Modules</div>
+
+    <div class="card active" style="--card-color:#00e5ff" onclick="show(0, this)">
+      <div class="card-num">01 ·</div>
+      <div class="card-title">Скрепинг тем</div>
+      <div class="card-sub">Puppeteer MCP · Google Trends</div>
+      <div class="card-icon">🔍</div>
+    </div>
+
+    <div class="card" style="--card-color:#7c3aed" onclick="show(1, this)">
+      <div class="card-num">02 ·</div>
+      <div class="card-title">Генерация контента</div>
+      <div class="card-sub">Claude API · Tone of Voice</div>
+      <div class="card-icon">✍️</div>
+    </div>
+
+    <div class="card" style="--card-color:#ec4899" onclick="show(2, this)">
+      <div class="card-num">03 ·</div>
+      <div class="card-title">Генерация картинок</div>
+      <div class="card-sub">Nano Banana · Replicate SDXL</div>
+      <div class="card-icon">🎨</div>
+    </div>
+
+    <div class="card" style="--card-color:#f59e0b" onclick="show(3, this)">
+      <div class="card-num">04 ·</div>
+      <div class="card-title">Автопостинг</div>
+      <div class="card-sub">Buffer API · cron</div>
+      <div class="card-icon">📡</div>
+    </div>
+
+    <div class="card" style="--card-color:#22c55e" onclick="show(4, this)">
+      <div class="card-num">05 ·</div>
+      <div class="card-title">Аналитика</div>
+      <div class="card-sub">Feedback Loop · Metrics</div>
+      <div class="card-icon">📊</div>
+    </div>
+  </nav>
+
+  <!-- DETAIL PANEL -->
+  <main class="detail" id="detail">
+    <!-- filled by JS -->
+  </main>
+
+</div>
+
+<!-- BOTTOM PANEL -->
+<div class="bottom-panel">
+
+  <div class="bottom-section">
+    <h3>// Файловая структура проекта</h3>
+    <div class="tree">
+      <div class="tree-line"><span class="t-dir">linkedin-machine/</span></div>
+      <div class="tree-indent">
+        <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-dir">src/</span></div>
+        <div class="tree-indent">
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">scraper.js</span> <span class="t-comment">// Puppeteer MCP + Trends</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">generator.js</span> <span class="t-comment">// Claude API calls</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">image.js</span> <span class="t-comment">// Replicate SDXL</span></div>
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">poster.js</span> <span class="t-comment">// Buffer API</span></div>
+          <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">analytics.js</span> <span class="t-comment">// metrics + loop</span></div>
+        </div>
+        <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-dir">prompts/</span></div>
+        <div class="tree-indent">
+          <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">tone-of-voice.md</span></div>
+          <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">post-template.md</span></div>
+        </div>
+        <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-dir">config/</span></div>
+        <div class="tree-indent">
+          <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">.env</span> <span class="t-comment">// API keys</span></div>
+        </div>
+        <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">index.js</span> <span class="t-comment">// entry point</span></div>
+        <div class="tree-line"><span class="tree-branch">├─</span> <span class="t-file">cron.js</span> <span class="t-comment">// scheduler</span></div>
+        <div class="tree-line"><span class="tree-branch">└─</span> <span class="t-file">package.json</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-section">
+    <h3>// Команды Claude Code</h3>
+    <div class="cmd-list">
+      <div class="cmd-item">
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Напиши scraper.js — парсинг Google Trends через Puppeteer MCP"</span>
+        <span class="cmd-comment">// создаёт модуль скрепинга</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Сгенерируй LinkedIn пост на тему {topic} в стиле tone-of-voice.md"</span>
+        <span class="cmd-comment">// генерация поста через Claude API</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Создай промпт для Replicate SDXL по теме: {post_title}"</span>
+        <span class="cmd-comment">// генерация обложки</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Настрой cron-расписание: пост в 9:00 по МСК в будни"</span>
+        <span class="cmd-comment">// автоматизация постинга</span>
+      </div>
+      <div class="cmd-item">
+        <span class="cmd-prompt">$ </span><span class="cmd-text">claude "Проанализируй метрики за неделю и улучши tone-of-voice.md"</span>
+        <span class="cmd-comment">// фидбэк-луп</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const modules = [
+  {
+    color: '#00e5ff',
+    bg: '#00e5ff18',
+    icon: '🔍',
+    title: 'Скрепинг тем',
+    desc: 'Автоматический сбор трендовых тем из Google Trends и веб-источников через Puppeteer MCP. Формирует очередь тем для генерации контента.',
+    tags: ['MCP', 'Node.js', 'Cron'],
+    tools: [
+      { name: 'Puppeteer MCP', type: 'Browser automation', color: '#00e5ff' },
+      { name: 'Google Trends', type: 'Topic discovery', color: '#00e5ff' },
+      { name: 'RSS Parser', type: 'Feed scraping', color: '#4ade80' },
+      { name: 'Cheerio', type: 'HTML parsing', color: '#f59e0b' },
+      { name: 'Node-cron', type: 'Scheduler', color: '#7c3aed' },
+      { name: 'Redis Queue', type: 'Topic buffer', color: '#ef4444' },
+    ],
+    flow: ['Google Trends', 'Puppeteer', 'HTML Parser', 'Topic Filter', 'Queue'],
+    steps: [
+      {
+        title: 'Запуск Puppeteer MCP',
+        desc: 'Браузерный агент открывает Google Trends и LinkedIn, собирает топ-10 трендов в нужной нише.',
+        code: 'mcp__puppeteer__navigate({ url: "https://trends.google.com/trending" })\nmcp__puppeteer__evaluate({ script: "getTrendingTopics()" })'
+      },
+      {
+        title: 'Фильтрация и скоринг тем',
+        desc: 'Темы оцениваются по релевантности, объёму поиска и конкурентности. Проходят только темы с score > 0.7.',
+        code: 'const scored = topics.map(t => ({ ...t, score: scoreRelevance(t) }))\nconst filtered = scored.filter(t => t.score > 0.7)'
+      },
+      {
+        title: 'Сохранение в очередь',
+        desc: 'Отфильтрованные темы кладутся в Redis-очередь для последующей генерации контента.',
+        code: 'await queue.add("content-gen", { topic, score, timestamp })'
+      },
+    ]
+  },
+  {
+    color: '#7c3aed',
+    bg: '#7c3aed18',
+    icon: '✍️',
+    title: 'Генерация контента',
+    desc: 'Claude API генерирует LinkedIn-посты с учётом Tone of Voice персонального бренда. Поддерживает A/B варианты и адаптацию под алгоритм LinkedIn.',
+    tags: ['Claude API', 'Prompt Engineering', 'A/B'],
+    tools: [
+      { name: 'Claude API', type: 'claude-sonnet-4-6', color: '#7c3aed' },
+      { name: 'Tone of Voice', type: 'Brand guidelines', color: '#ec4899' },
+      { name: 'Prompt Templates', type: 'Structured prompts', color: '#f59e0b' },
+      { name: 'A/B Generator', type: 'Variant testing', color: '#00e5ff' },
+      { name: 'Hook Library', type: 'Opening lines', color: '#22c55e' },
+      { name: 'CTA Templates', type: 'Call to action', color: '#ef4444' },
+    ],
+    flow: ['Topic', 'Tone of Voice', 'Claude API', 'A/B Variants', 'Review'],
+    steps: [
+      {
+        title: 'Загрузка Tone of Voice',
+        desc: 'Читается файл tone-of-voice.md — стиль письма, запрещённые фразы, структура поста, целевая аудитория.',
+        code: 'const tov = fs.readFileSync("prompts/tone-of-voice.md", "utf8")\nconst template = fs.readFileSync("prompts/post-template.md", "utf8")'
+      },
+      {
+        title: 'Генерация через Claude API',
+        desc: 'Claude получает тему + ToV + шаблон и генерирует 2 варианта поста: лаконичный (до 300 слов) и развёрнутый (600+).',
+        code: 'const response = await anthropic.messages.create({\n  model: "claude-sonnet-4-6",\n  messages: [{ role: "user", content: buildPrompt(topic, tov) }]\n})'
+      },
+      {
+        title: 'Валидация и A/B сплит',
+        desc: 'Посты проверяются на длину, наличие хуков, CTA и эмодзи. Оба варианта сохраняются для тестирования.',
+        code: 'const [varA, varB] = parseTwoVariants(response.content)\nawait db.save({ topic, varA, varB, status: "pending" })'
+      },
+    ]
+  },
+  {
+    color: '#ec4899',
+    bg: '#ec489918',
+    icon: '🎨',
+    title: 'Генерация картинок',
+    desc: 'Автоматическая генерация визуальных обложек для постов через Replicate SDXL. Промпты строятся на основе темы и стиля бренда.',
+    tags: ['Replicate', 'SDXL', 'Nano Banana'],
+    tools: [
+      { name: 'Replicate API', type: 'SDXL inference', color: '#ec4899' },
+      { name: 'Nano Banana', type: 'Fast generation', color: '#f59e0b' },
+      { name: 'SDXL 1.0', type: 'Base model', color: '#7c3aed' },
+      { name: 'ControlNet', type: 'Composition', color: '#00e5ff' },
+      { name: 'Sharp.js', type: 'Post-processing', color: '#22c55e' },
+      { name: 'Canvas API', type: 'Text overlay', color: '#ef4444' },
+    ],
+    flow: ['Post Title', 'SDXL Prompt', 'Replicate', 'Post-process', 'CDN Upload'],
+    steps: [
+      {
+        title: 'Построение промпта для SDXL',
+        desc: 'Claude генерирует детальный промпт для Stable Diffusion на основе темы поста и фирменного стиля.',
+        code: 'const imgPrompt = await claude.generate(\n  `Create SDXL prompt for LinkedIn cover: "${postTitle}"\n   Style: minimalist, dark, professional, tech`\n)'
+      },
+      {
+        title: 'Запрос к Replicate / Nano Banana',
+        desc: 'Промпт отправляется в Replicate SDXL. Nano Banana используется для быстрой генерации превью.',
+        code: 'const output = await replicate.run("stability-ai/sdxl", {\n  input: { prompt: imgPrompt, width: 1200, height: 627 }\n})'
+      },
+      {
+        title: 'Постобработка и overlay',
+        desc: 'Sharp.js обрезает и сжимает изображение. Canvas добавляет текстовый оверлей с заголовком поста.',
+        code: 'await sharp(imageBuffer)\n  .resize(1200, 627)\n  .jpeg({ quality: 90 })\n  .toFile(`covers/${postId}.jpg`)'
+      },
+    ]
+  },
+  {
+    color: '#f59e0b',
+    bg: '#f59e0b18',
+    icon: '📡',
+    title: 'Автопостинг',
+    desc: 'Расписание публикаций через Buffer API с оптимальным тайминг для LinkedIn-алгоритма. Cron-джобы управляют очередью постов.',
+    tags: ['Buffer API', 'Cron', 'LinkedIn API'],
+    tools: [
+      { name: 'Buffer API', type: 'Scheduling service', color: '#f59e0b' },
+      { name: 'Node-cron', type: 'Job scheduler', color: '#00e5ff' },
+      { name: 'LinkedIn API', type: 'Direct posting', color: '#7c3aed' },
+      { name: 'BullMQ', type: 'Job queue', color: '#ec4899' },
+      { name: 'Retry Logic', type: 'Error recovery', color: '#ef4444' },
+      { name: 'Webhook Logger', type: 'Post tracking', color: '#22c55e' },
+    ],
+    flow: ['Post Queue', 'Scheduler', 'Buffer API', 'LinkedIn', 'Confirm'],
+    steps: [
+      {
+        title: 'Cron-расписание',
+        desc: 'Посты публикуются в оптимальное время: вт–чт 8:00–9:00 по UTC+3. Cron проверяет очередь каждые 30 минут.',
+        code: 'cron.schedule("0 6 * * 2,3,4", async () => {\n  const post = await queue.getNext()\n  if (post) await publishPost(post)\n})'
+      },
+      {
+        title: 'Публикация через Buffer',
+        desc: 'Buffer API принимает текст, изображение и время публикации. Поддерживает черновики для ручного review.',
+        code: 'await buffer.createUpdate({\n  profile_ids: [LINKEDIN_PROFILE_ID],\n  text: post.content,\n  media: { photo: post.imageUrl },\n  scheduled_at: getOptimalTime()\n})'
+      },
+      {
+        title: 'Логирование и retry',
+        desc: 'Каждая публикация логируется. При ошибке — автоматический retry через 15 минут (до 3 попыток).',
+        code: 'await db.update(post.id, { status: "published", publishedAt: new Date() })\nwebhook.notify({ event: "post_published", postId: post.id })'
+      },
+    ]
+  },
+  {
+    color: '#22c55e',
+    bg: '#22c55e18',
+    icon: '📊',
+    title: 'Аналитика и фидбэк-луп',
+    desc: 'Сбор метрик постов (охват, реакции, комментарии) и автоматическая корректировка Tone of Voice и тематики на основе данных.',
+    tags: ['LinkedIn Analytics', 'Claude API', 'Auto-optimize'],
+    tools: [
+      { name: 'LinkedIn Analytics', type: 'Native API', color: '#22c55e' },
+      { name: 'Claude Analysis', type: 'Pattern detection', color: '#7c3aed' },
+      { name: 'Metabase / CSV', type: 'Data storage', color: '#00e5ff' },
+      { name: 'Diff Engine', type: 'ToV updater', color: '#ec4899' },
+      { name: 'Weekly Report', type: 'Digest generator', color: '#f59e0b' },
+      { name: 'A/B Evaluator', type: 'Variant winner', color: '#ef4444' },
+    ],
+    flow: ['LinkedIn API', 'Metrics DB', 'Claude Analysis', 'ToV Update', 'Next Cycle'],
+    steps: [
+      {
+        title: 'Сбор метрик',
+        desc: 'LinkedIn API возвращает impressions, reactions, comments, shares и CTR для каждого поста через 48 часов.',
+        code: 'const metrics = await linkedin.getPostAnalytics(postId, {\n  fields: ["impressionCount", "likeCount", "commentCount", "shareCount"]\n})'
+      },
+      {
+        title: 'Анализ паттернов через Claude',
+        desc: 'Claude анализирует топ-5 постов недели и выявляет: какие темы, структуры и хуки работают лучше всего.',
+        code: 'const analysis = await claude.analyze({\n  posts: topPosts,\n  prompt: "Find patterns in high-performing posts. What topics, hooks, and structures work best?"\n})'
+      },
+      {
+        title: 'Обновление Tone of Voice',
+        desc: 'На основе анализа Claude автоматически обновляет tone-of-voice.md — добавляет успешные паттерны и убирает неэффективные.',
+        code: 'const updatedToV = await claude.refine(currentToV, analysis.recommendations)\nfs.writeFileSync("prompts/tone-of-voice.md", updatedToV)\nawait git.commit("chore: update tone-of-voice based on weekly analytics")'
+      },
+    ]
+  }
+]
+
+function show(idx, el) {
+  // update active card
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'))
+  el.classList.add('active')
+
+  const m = modules[idx]
+  const detail = document.getElementById('detail')
+
+  detail.innerHTML = `
+    <div class="detail-content">
+      <div class="detail-header">
+        <div class="detail-icon-wrap" style="background:${m.bg}">
+          <span>${m.icon}</span>
+        </div>
+        <div>
+          <h2 style="color:${m.color}">${m.title}</h2>
+          <p>${m.desc}</p>
+          <div style="margin-top:8px">
+            ${m.tags.map(t => `<span class="tag" style="color:${m.color};border-color:${m.color}44">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">// Инструменты</div>
+        <div class="tools-grid">
+          ${m.tools.map(t => `
+            <div class="tool-chip">
+              <div class="tool-dot" style="background:${t.color}"></div>
+              <div>
+                <div class="tool-name">${t.name}</div>
+                <div class="tool-type">${t.type}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">// Data Flow</div>
+        <div class="flow">
+          ${m.flow.map((node, i) => `
+            <div class="flow-node" style="${i===0?'border-color:'+m.color+';color:'+m.color:''}">${node}</div>
+            ${i < m.flow.length-1 ? '<span class="flow-arrow">→</span>' : ''}
+          `).join('')}
+        </div>
+      </div>
+
+      <div>
+        <div class="section-label">// Шаги реализации</div>
+        <div class="steps">
+          ${m.steps.map((s, i) => `
+            <div class="step" style="--step-color:${m.color}">
+              <div>
+                <div class="step-num">${String(i+1).padStart(2,'0')}</div>
+                <div class="step-line"></div>
+              </div>
+              <div class="step-body">
+                <div class="step-title">${s.title}</div>
+                <div class="step-desc">${s.desc}</div>
+                <div class="step-code" style="color:${m.color}">${s.code}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `
+}
+
+// init with first card
+show(0, document.querySelector('.card'))
+</script>
+</body>
+</html>
