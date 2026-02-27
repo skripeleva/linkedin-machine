@@ -1,0 +1,23 @@
+{
+  "name": "linkedin-engine",
+  "version": "1.0.0",
+  "description": "LinkedIn Content Engine — Spicy Analyst",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.3",
+    "better-sqlite3": "^11.5.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  }
+}

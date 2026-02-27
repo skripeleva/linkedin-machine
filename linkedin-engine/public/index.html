@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ LinkedIn Content Engine</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #09090B;
+      --surface:  #111113;
+      --card:     #18181B;
+      --border:   #1E1E22;
+      --border2:  #2a2a30;
+      --accent1:  #EF4444;
+      --accent2:  #F59E0B;
+      --green:    #22c55e;
+      --blue:     #3b82f6;
+      --purple:   #a855f7;
+      --text:     #E4E4E7;
+      --muted:    #71717A;
+      --muted2:   #52525B;
+      --radius:   8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── Header ─────────────────────────────────────────── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.25rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-logo {
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      white-space: nowrap;
+    }
+
+    .header-sub {
+      color: var(--muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .source-badges {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .badge {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted2);
+    }
+    .badge.ok .dot   { background: var(--green); }
+    .badge.err .dot  { background: var(--accent1); }
+
+    .scan-meta {
+      color: var(--muted);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      color: #fff;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    .btn-sm {
+      padding: 0.25rem 0.55rem;
+      font-size: 0.75rem;
+    }
+
+    /* ─── Stats bar ───────────────────────────────────────── */
+    .stats-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem 1.25rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .stat-item .val {
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Main layout ─────────────────────────────────────── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar (topic list) ───────────────────────────── */
+    .sidebar {
+      width: 340px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .filters {
+      padding: 0.75rem 0.75rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 0.2rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--muted);
+      transition: all 0.12s;
+    }
+    .filter-btn:hover { border-color: var(--accent2); color: var(--text); }
+    .filter-btn.active {
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .filter-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted2);
+      padding: 0 0.1rem;
+      margin-bottom: -0.1rem;
+    }
+
+    .topic-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.25rem 0;
+    }
+
+    .topic-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.65rem 0.75rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+      position: relative;
+    }
+    .topic-item:hover { background: var(--card); }
+    .topic-item.active { background: var(--card); border-left: 2px solid var(--accent1); }
+    .topic-item.starred { border-left: 2px solid var(--accent2); }
+
+    .score-badge {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .score-90 { background: rgba(239,68,68,0.15); color: #EF4444; }
+    .score-70 { background: rgba(245,158,11,0.15); color: #F59E0B; }
+    .score-50 { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .score-lo { background: rgba(113,113,122,0.15); color: #71717A; }
+
+    .topic-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .topic-title {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.35;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      margin-bottom: 0.3rem;
+    }
+
+    .topic-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .src-tag {
+      font-size: 0.68rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .src-hn   { background: rgba(245,158,11,0.15); color: #F59E0B; }
+    .src-cg   { background: rgba(34,197,94,0.12);  color: #22c55e; }
+    .src-ph   { background: rgba(239,68,68,0.12);  color: #EF4444; }
+    .src-seed { background: rgba(168,85,247,0.12); color: #a855f7; }
+
+    .type-tag {
+      font-size: 0.68rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+    }
+
+    .age-text {
+      font-size: 0.68rem;
+      color: var(--muted2);
+      margin-left: auto;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-new      { background: var(--blue); }
+    .dot-starred  { background: var(--accent2); }
+    .dot-drafted  { background: var(--purple); }
+    .dot-new.fresh { animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ─── Detail panel ────────────────────────────────────── */
+    .detail {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      color: var(--muted2);
+    }
+
+    .empty-icon { font-size: 2.5rem; }
+
+    .detail-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .detail-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .detail-tags {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .niche-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border2);
+      color: var(--muted);
+    }
+
+    /* Score breakdown */
+    .score-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+
+    .score-total {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .score-num {
+      font-size: 2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .score-label { color: var(--muted); font-size: 0.78rem; }
+
+    .score-bars { display: flex; flex-direction: column; gap: 0.45rem; }
+
+    .score-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .score-bar-label {
+      width: 50px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .score-bar-track {
+      flex: 1;
+      height: 5px;
+      background: var(--border2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.4s;
+    }
+    .bar-r { background: var(--accent1); }
+    .bar-e { background: var(--accent2); }
+    .bar-f { background: var(--blue); }
+    .bar-v { background: var(--purple); }
+
+    .score-bar-val {
+      width: 22px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Info blocks */
+    .info-block {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+    }
+
+    .info-block-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted2);
+      margin-bottom: 0.4rem;
+    }
+
+    .info-block-text {
+      font-size: 0.85rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .info-block-text a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+    .info-block-text a:hover { text-decoration: underline; }
+
+    .fact-ok   { color: var(--green); }
+    .fact-warn { color: var(--accent2); }
+
+    /* Generate button area */
+    .generate-area {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .generate-status {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Draft preview */
+    .draft-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .draft-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .author-info { flex: 1; }
+    .author-name { font-size: 0.8rem; font-weight: 600; }
+    .author-role { font-size: 0.7rem; color: var(--muted); }
+
+    .draft-textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 0.85rem;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 0.83rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    /* Action buttons row */
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      padding: 0.6rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      z-index: 999;
+      animation: fadeIn 0.2s;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+
+    /* Mobile modal overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+
+    .modal-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 640px;
+      margin-top: 1rem;
+    }
+
+    .modal-close {
+      position: sticky;
+      top: 0.5rem;
+      float: right;
+      margin: 0.5rem 0.5rem 0 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .sidebar { width: 100%; border-right: none; }
+      .detail  { display: none; }
+      .modal-overlay { display: none; }
+      .modal-overlay.open { display: flex; }
+      .stats-bar { overflow-x: auto; }
+      .source-badges { display: none; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    .velocity-badge {
+      font-size: 0.65rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 4px;
+      font-weight: 600;
+      background: rgba(34,197,94,0.12);
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ──────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-logo">⚡ LinkedIn Content Engine</div>
+  <div class="header-sub">Spicy Analyst</div>
+  <div class="header-spacer"></div>
+  <div class="source-badges">
+    <div class="badge" id="badge-hn"><span class="dot"></span>HN</div>
+    <div class="badge" id="badge-cg"><span class="dot"></span>CG</div>
+    <div class="badge" id="badge-ph"><span class="dot"></span>PH</div>
+  </div>
+  <div class="scan-meta" id="scan-meta">—</div>
+  <button class="btn btn-outline btn-sm" id="scan-btn" onclick="triggerScan()">
+    <span id="scan-icon">⟳</span> Scan
+  </button>
+  <form method="POST" action="/logout" style="display:inline">
+    <button class="btn btn-ghost btn-sm" type="submit">Exit</button>
+  </form>
+</header>
+
+<!-- ─── Stats bar ──────────────────────────────────────────────────────── -->
+<div class="stats-bar" id="stats-bar">
+  <div class="stat-item">Total <span class="val" id="s-total">—</span></div>
+  <div class="stat-item">New <span class="val" id="s-new">—</span></div>
+  <div class="stat-item">Starred <span class="val" id="s-starred">—</span></div>
+  <div class="stat-item">Drafted <span class="val" id="s-drafted">—</span></div>
+  <div class="stat-item">Published <span class="val" id="s-published">—</span></div>
+</div>
+
+<!-- ─── Main ───────────────────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="filters">
+      <div>
+        <div class="filter-label">Source</div>
+        <div class="filter-row" id="filter-source">
+          <button class="filter-btn active" data-val="">All</button>
+          <button class="filter-btn" data-val="hackernews">HN</button>
+          <button class="filter-btn" data-val="coingecko">CG</button>
+          <button class="filter-btn" data-val="producthunt">PH</button>
+          <button class="filter-btn" data-val="seed">Seed</button>
+        </div>
+      </div>
+      <div>
+        <div class="filter-label">Type</div>
+        <div class="filter-row" id="filter-type">
+          <button class="filter-btn active" data-val="">All</button>
+          <button class="filter-btn" data-val="expert">Expert</button>
+          <button class="filter-btn" data-val="viral">Viral</button>
+          <button class="filter-btn" data-val="tools">Tools</button>
+          <button class="filter-btn" data-val="educational">Edu</button>
+        </div>
+      </div>
+      <div>
+        <div class="filter-label">Sort</div>
+        <div class="filter-row" id="filter-sort">
+          <button class="filter-btn active" data-val="">Score</button>
+          <button class="filter-btn" data-val="fresh">Freshest</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="topic-list" id="topic-list">
+      <div class="empty-state" style="padding: 3rem 1rem; text-align:center; color: var(--muted2);">
+        Loading topics...
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail panel (desktop) -->
+  <div class="detail" id="detail-panel">
+    <div class="empty-state">
+      <div class="empty-icon">⚡</div>
+      <div>Select a topic to view details</div>
+      <div style="font-size:0.78rem">Click any topic in the list</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Mobile modal -->
+<div class="modal-overlay" id="mobile-modal">
+  <div class="modal-content">
+    <button class="btn btn-ghost btn-sm modal-close" onclick="closeMobileModal()">✕ Close</button>
+    <div class="detail" id="detail-modal" style="max-height:90vh; overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none;"></div>
+
+<script>
+  // ─── State ──────────────────────────────────────────────────────────────
+  let topics = [];
+  let selectedId = null;
+  let filters = { source: "", type: "", sort: "" };
+
+  // ─── Boot ────────────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", () => {
+    loadTopics();
+    loadStats();
+    setupFilters();
+    setInterval(loadStats, 60_000);
+  });
+
+  // ─── Filters ─────────────────────────────────────────────────────────────
+  function setupFilters() {
+    ["filter-source", "filter-type", "filter-sort"].forEach(groupId => {
+      const group = document.getElementById(groupId);
+      const key = groupId.replace("filter-", "");
+      group.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          group.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          filters[key] = btn.dataset.val;
+          loadTopics();
+        });
+      });
+    });
+  }
+
+  // ─── Load topics ──────────────────────────────────────────────────────────
+  async function loadTopics() {
+    const params = new URLSearchParams();
+    if (filters.source) params.set("source", filters.source);
+    if (filters.type)   params.set("type",   filters.type);
+    if (filters.sort)   params.set("sort",   filters.sort);
+
+    try {
+      const res = await fetch("/api/topics?" + params);
+      topics = await res.json();
+      renderTopicList();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // ─── Render list ──────────────────────────────────────────────────────────
+  function renderTopicList() {
+    const list = document.getElementById("topic-list");
+    if (!topics.length) {
+      list.innerHTML = `<div style="padding:2rem 1rem; text-align:center; color:var(--muted2)">No topics found.<br>Run a scan to fetch fresh content.</div>`;
+      return;
+    }
+
+    list.innerHTML = topics.map(t => {
+      const scoreCls = t.score >= 90 ? "score-90" : t.score >= 70 ? "score-70" : t.score >= 50 ? "score-50" : "score-lo";
+      const srcCls   = { hackernews: "src-hn", coingecko: "src-cg", producthunt: "src-ph", seed: "src-seed" }[t.source] || "src-seed";
+      const srcLabel = { hackernews: "HN", coingecko: "CG", producthunt: "PH", seed: "★" }[t.source] || t.source;
+      const statusDot = t.status === "starred" ? "dot-starred" : t.status === "drafted" ? "dot-drafted" : "dot-new";
+      const freshPulse = t.age_hours < 2 ? " fresh" : "";
+      const age = formatAge(t.age_hours);
+      const vel = t.velocity ? `<span class="velocity-badge">${t.velocity}</span>` : "";
+      const active = t.id === selectedId ? " active" : "";
+      const starred = t.status === "starred" ? " starred" : "";
+
+      return `<div class="topic-item${active}${starred}" onclick="selectTopic('${t.id}')">
+        <div class="score-badge ${scoreCls}">${t.score}</div>
+        <div class="topic-meta">
+          <div class="topic-title">${escHtml(t.title)}</div>
+          <div class="topic-footer">
+            <span class="src-tag ${srcCls}">${srcLabel}</span>
+            <span class="type-tag">${t.content_type}</span>
+            ${vel}
+            <span class="age-text">${age}</span>
+            <span class="status-dot ${statusDot}${freshPulse}"></span>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // ─── Select topic ─────────────────────────────────────────────────────────
+  async function selectTopic(id) {
+    selectedId = id;
+    renderTopicList();
+
+    const res = await fetch(`/api/topics/${id}`);
+    const topic = await res.json();
+
+    const html = buildDetailHTML(topic);
+    const isMobile = window.innerWidth <= 700;
+
+    if (isMobile) {
+      document.getElementById("detail-modal").innerHTML = html;
+      document.getElementById("mobile-modal").classList.add("open");
+    } else {
+      document.getElementById("detail-panel").innerHTML = html;
+    }
+
+    bindDetailEvents(id, topic);
+  }
+
+  function closeMobileModal() {
+    document.getElementById("mobile-modal").classList.remove("open");
+  }
+
+  // ─── Build detail HTML ────────────────────────────────────────────────────
+  function buildDetailHTML(t) {
+    const niches = Array.isArray(t.niches) ? t.niches : [];
+    const nicheTags = niches.map(n => `<span class="niche-tag">${escHtml(n)}</span>`).join(" ");
+    const srcCls = { hackernews: "src-hn", coingecko: "src-cg", producthunt: "src-ph", seed: "src-seed" }[t.source] || "src-seed";
+    const srcLabel = { hackernews: "Hacker News", coingecko: "CoinGecko", producthunt: "Product Hunt", seed: "Seed" }[t.source] || t.source;
+
+    const factStatus = t.fact_checked
+      ? `<span class="fact-ok">✓ Verified</span> ${escHtml(t.fact_notes || "")}`
+      : `<span class="fact-warn">⚠ Needs check</span> ${escHtml(t.fact_notes || "Run fact-check before posting")}`;
+
+    const draftSection = t.draft ? `
+      <div class="draft-section" id="draft-section">
+        <div class="draft-header">
+          <div class="avatar">SA</div>
+          <div class="author-info">
+            <div class="author-name">Spicy Analyst</div>
+            <div class="author-role">Growth × Crypto × AI</div>
+          </div>
+          <span class="type-tag">${t.content_type}</span>
+        </div>
+        <textarea class="draft-textarea" id="draft-text" oninput="scheduleSaveDraft('${t.id}')">${escHtml(t.draft)}</textarea>
+      </div>
+    ` : "";
+
+    return `
+      <div class="detail-header">
+        <div class="detail-title">${escHtml(t.title)}</div>
+        <div class="detail-tags">
+          <span class="src-tag ${srcCls}">${srcLabel}</span>
+          <span class="type-tag">${t.content_type}</span>
+          ${t.velocity ? `<span class="velocity-badge">${t.velocity}</span>` : ""}
+          ${nicheTags}
+        </div>
+      </div>
+
+      <div class="score-section">
+        <div class="score-total">
+          <div class="score-num">${t.score}</div>
+          <div class="score-label">/ 100 composite score</div>
+        </div>
+        <div class="score-bars">
+          ${scoreBar("Relevance", t.score_r, 40, "bar-r")}
+          ${scoreBar("Engagement", t.score_e, 30, "bar-e")}
+          ${scoreBar("Freshness", t.score_f, 20, "bar-f")}
+          ${scoreBar("Virality", t.score_v, 10, "bar-v")}
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-label">Hook suggestion</div>
+        <div class="info-block-text">${escHtml(t.hook || "—")}</div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-label">Post direction</div>
+        <div class="info-block-text">${escHtml(t.post_idea || "—")}</div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-label">Source</div>
+        <div class="info-block-text">
+          <a href="${escHtml(t.source_url || "#")}" target="_blank" rel="noopener">${escHtml(t.source_title || t.source_url || "—")}</a>
+          ${t.hn_discussion_url ? ` &mdash; <a href="${escHtml(t.hn_discussion_url)}" target="_blank" rel="noopener">Discussion</a>` : ""}
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-label">Fact check</div>
+        <div class="info-block-text">${factStatus}</div>
+      </div>
+
+      <div class="generate-area" id="generate-area">
+        <button class="btn btn-primary generate-btn" id="gen-btn" onclick="generateDraft('${t.id}')">
+          🎤 Generate Draft
+        </button>
+        <div class="generate-status" id="gen-status"></div>
+      </div>
+
+      ${draftSection}
+
+      <div class="actions" id="actions">
+        ${t.status !== "starred" ? `<button class="btn btn-outline btn-sm" onclick="setStatus('${t.id}', 'starred')">⭐ Star</button>` : `<button class="btn btn-outline btn-sm" onclick="setStatus('${t.id}', 'new')">★ Unstar</button>`}
+        <button class="btn btn-outline btn-sm" onclick="setStatus('${t.id}', 'published')">✓ Published</button>
+        <button class="btn btn-outline btn-sm" onclick="setStatus('${t.id}', 'skipped')">✕ Skip</button>
+        ${t.draft ? `<button class="btn btn-outline btn-sm" onclick="copyDraft()">📋 Copy</button>` : ""}
+      </div>
+    `;
+  }
+
+  function scoreBar(label, val, max, cls) {
+    const pct = Math.round((val / max) * 100);
+    return `<div class="score-bar-row">
+      <div class="score-bar-label">${label}</div>
+      <div class="score-bar-track"><div class="score-bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="score-bar-val">${val}</div>
+    </div>`;
+  }
+
+  // ─── Bind events after render ─────────────────────────────────────────────
+  function bindDetailEvents(id, topic) {
+    // auto-resize textarea
+    const ta = document.getElementById("draft-text");
+    if (ta) {
+      ta.addEventListener("blur", () => saveDraftNow(id));
+    }
+  }
+
+  // ─── Generate draft ───────────────────────────────────────────────────────
+  async function generateDraft(id) {
+    const btn = document.getElementById("gen-btn");
+    const status = document.getElementById("gen-status");
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Generating...`;
+    status.textContent = "🔍 Fact-checking with web search...";
+
+    try {
+      const res = await fetch(`/api/topics/${id}/generate`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generation failed");
+
+      status.textContent = "✓ Draft ready";
+
+      // Re-render with draft
+      await selectTopic(id);
+      toast("Draft generated successfully");
+    } catch (e) {
+      status.textContent = "✗ " + e.message;
+      btn.disabled = false;
+      btn.innerHTML = "🎤 Generate Draft";
+    }
+  }
+
+  // ─── Save draft ───────────────────────────────────────────────────────────
+  let saveTimer = null;
+  function scheduleSaveDraft(id) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveDraftNow(id), 1500);
+  }
+
+  async function saveDraftNow(id) {
+    const ta = document.getElementById("draft-text");
+    if (!ta) return;
+    await fetch(`/api/topics/${id}/draft`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: ta.value }),
+    });
+  }
+
+  // ─── Set status ───────────────────────────────────────────────────────────
+  async function setStatus(id, status) {
+    await fetch(`/api/topics/${id}/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+
+    if (["published", "skipped"].includes(status)) {
+      selectedId = null;
+      document.getElementById("detail-panel").innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚡</div>
+          <div>Select a topic to view details</div>
+        </div>`;
+      closeMobileModal();
+    } else {
+      await selectTopic(id);
+    }
+
+    await loadTopics();
+    await loadStats();
+    toast(`Marked as ${status}`);
+  }
+
+  // ─── Copy draft ───────────────────────────────────────────────────────────
+  function copyDraft() {
+    const ta = document.getElementById("draft-text");
+    if (!ta) return;
+    navigator.clipboard.writeText(ta.value).then(() => toast("Copied to clipboard!"));
+  }
+
+  // ─── Scan ─────────────────────────────────────────────────────────────────
+  async function triggerScan() {
+    const btn = document.getElementById("scan-btn");
+    const icon = document.getElementById("scan-icon");
+    btn.disabled = true;
+    icon.innerHTML = `<span class="spinner" style="border-color:rgba(255,255,255,0.2);border-top-color:currentColor"></span>`;
+
+    try {
+      await fetch("/api/scan", { method: "POST" });
+      toast("Scan started...");
+      setTimeout(async () => {
+        await loadTopics();
+        await loadStats();
+        btn.disabled = false;
+        icon.textContent = "⟳";
+      }, 5000);
+    } catch {
+      btn.disabled = false;
+      icon.textContent = "⟳";
+    }
+  }
+
+  // ─── Stats ────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/stats");
+      const { stats, lastScans } = await res.json();
+
+      document.getElementById("s-total").textContent     = stats.total || 0;
+      document.getElementById("s-new").textContent       = stats.new_count || 0;
+      document.getElementById("s-starred").textContent   = stats.starred || 0;
+      document.getElementById("s-drafted").textContent   = stats.drafted || 0;
+      document.getElementById("s-published").textContent = stats.published || 0;
+
+      // Source health badges
+      const bySource = {};
+      (lastScans || []).forEach(s => bySource[s.source] = s);
+
+      const now = Date.now();
+      const updateBadge = (id, src) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const s = bySource[src];
+        if (!s) return;
+        const minsAgo = (now - new Date(s.last_scan).getTime()) / 60000;
+        el.classList.toggle("ok",  minsAgo < 60 && !s.errors);
+        el.classList.toggle("err", !!s.errors);
+
+        const meta = document.getElementById("scan-meta");
+        if (minsAgo < 60) {
+          meta.textContent = `Last scan: ${Math.round(minsAgo)}m ago`;
+        }
+      };
+
+      updateBadge("badge-hn", "hackernews");
+      updateBadge("badge-cg", "coingecko");
+      updateBadge("badge-ph", "producthunt");
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  function formatAge(hours) {
+    if (hours === 0) return "live";
+    if (hours < 1)   return `${Math.round(hours * 60)}m ago`;
+    if (hours < 24)  return `${Math.round(hours)}h ago`;
+    return `${Math.round(hours / 24)}d ago`;
+  }
+
+  function escHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.style.display = "none"; }, 2500);
+  }
+</script>
+</body>
+</html>
